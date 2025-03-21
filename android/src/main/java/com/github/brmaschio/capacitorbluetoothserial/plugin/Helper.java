@@ -33,4 +33,8 @@ public class Helper {
         return hexString.toString();
     }
 
+    public static boolean isEmpity(String stg) {
+        return stg == null || stg.trim().isEmpty();
+    }
+
 }

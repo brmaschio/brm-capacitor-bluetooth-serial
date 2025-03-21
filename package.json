@@ -1,6 +1,6 @@
 {
-  "name": "brm-capacitor-bluetooth-serial",
-  "version": "0.0.1",
+  "name": "@brmaschio/brm-capacitor-bluetooth-serial",
+  "version": "1.0.1",
   "description": "Plugin to work with ionic and capacitor using bluetooth",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -19,10 +19,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/brmaschio/capacitor-bluetooth-serial.git"
+    "url": "git+https://github.com/brmaschio/brm-capacitor-bluetooth-serial.git"
   },
   "bugs": {
-    "url": "https://github.com/brmaschio/capacitor-bluetooth-serial/issues"
+    "url": "https://github.com/brmaschio/brm-capacitor-bluetooth-serial/issues"
   },
   "keywords": [
     "capacitor",

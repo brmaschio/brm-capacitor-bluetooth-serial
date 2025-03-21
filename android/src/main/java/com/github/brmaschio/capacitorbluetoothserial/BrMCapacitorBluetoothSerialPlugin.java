@@ -86,7 +86,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void isConnected(PluginCall call) {
         String address = call.getString("address");
 
-        if (address == null) {
+        if (Helper.isEmpity(address)) {
             call.reject("address not found");
         }
 
@@ -101,7 +101,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
         String mode = call.getString("mode", EditorMode.TEXT.getDesc());
         EditorMode editorMode = EditorMode.getByDesc(mode);
 
-        if (address == null) {
+        if (Helper.isEmpity(address)) {
             call.reject("address not found");
         }
 
@@ -119,7 +119,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void disconnect(PluginCall call) {
         String address = call.getString("address");
 
-        if (address == null) {
+        if (Helper.isEmpity(address)) {
             call.reject("address not found");
         }
 
@@ -137,10 +137,10 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
         String address = call.getString("address");
         String command = call.getString("command");
 
-        if (address == null) {
+        if (Helper.isEmpity(address)) {
             call.reject("address not found");
         }
-        if (command == null) {
+        if (Helper.isEmpity(command)) {
             call.reject("command not found");
         }
 
@@ -156,7 +156,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void read(PluginCall call) {
         String address = call.getString("address");
 
-        if (address == null) {
+        if (Helper.isEmpity(address)) {
             call.reject("address not found");
         }
 
