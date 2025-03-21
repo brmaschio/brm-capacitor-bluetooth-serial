@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.getcapacitor.annotation.PermissionCallback;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,8 +27,8 @@ public class BluetoothService {
     private final Context context;
     private final Activity activity;
 
-    private Map<String, BluetoothConnection> connections = new HashMap<>();
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    private final Map<String, BluetoothConnection> connections = new HashMap<>();
+    private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     public BluetoothService(Context context, Activity activity) {
         this.context = context;
@@ -50,23 +52,34 @@ public class BluetoothService {
         }
     }
 
+    @SuppressLint("MissingPermission")
     public boolean isEnabled() {
         boolean hasBluetoothFeature = activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH);
-        return hasBluetoothFeature && hasPermitions() && bluetoothAdapter.isEnabled();
+        boolean hasPermitions = hasPermitions();
+        boolean bluetoothAdapterIsEnabled = bluetoothAdapter.isEnabled();
+
+        if (hasBluetoothFeature && hasPermitions && !bluetoothAdapterIsEnabled) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, 200);
+        }
+
+        String logMsg = "Check is enabled."
+                .concat(" hasBluetoothFeature: ").concat(String.valueOf(hasBluetoothFeature))
+                .concat(" hasPermitions: ").concat(String.valueOf(hasPermitions))
+                .concat(" bluetoothAdapterIsEnabled: ").concat(String.valueOf(bluetoothAdapterIsEnabled));
+        Log.i(Helper.TAG, logMsg);
+
+        return hasBluetoothFeature && hasPermitions && bluetoothAdapterIsEnabled;
     }
 
-    public void requestPermissions() {
-        int requestCode = 100;
+    public String loadPermissionsAlias() {
+        Log.i(Helper.TAG, "Request BLUETOOTH Permissions");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT}, requestCode);
+            return "BLUETOOTH";
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // Android 10-11
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, requestCode);
+            return "BLUETOOTH-10-11";
         } else {
-            // Android 6-9
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, requestCode);
+            return "BLUETOOTH-6-9";
         }
     }
 
@@ -144,11 +157,11 @@ public class BluetoothService {
             connection = getConnection(address);
         }
 
-        if(connection == null || !connection.isConnected()) {
+        if (connection == null || !connection.isConnected()) {
             throw new BluetoothPermissionException("Device not found");
         }
 
-        if(connection.getEditorMode().equals(EditorMode.HEX)) {
+        if (connection.getEditorMode().equals(EditorMode.HEX)) {
             byte[] bytes = Helper.hexStringToByteArray(command);
             Log.i(Helper.TAG, "Command HEX: " + command + " | Bytes: " + Arrays.toString(bytes));
             connection.write(bytes);
@@ -167,7 +180,7 @@ public class BluetoothService {
         Log.i(Helper.TAG, "Trying read");
 
         BluetoothConnection connection = getConnection(address);
-        if(connection == null || !connection.isConnected()) {
+        if (connection == null || !connection.isConnected()) {
             throw new BluetoothPermissionException("Device not found");
         }
 

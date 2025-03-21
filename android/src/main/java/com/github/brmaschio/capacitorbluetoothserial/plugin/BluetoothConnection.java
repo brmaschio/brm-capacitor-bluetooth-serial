@@ -3,6 +3,7 @@ package com.github.brmaschio.capacitorbluetoothserial.plugin;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,13 @@ public class BluetoothConnection extends Thread {
                         appendToBuffer(new String(buffer, 0, bytesRead));
                     }
                 } catch (IOException e) {
-                    // disconnect();
+                    try {
+                        disconnect();
+                    } catch (BluetoothPermissionException ex) {
+                        connected = false;
+                        Log.e(Helper.TAG, "Fail disconnect on run process");
+                        throw new RuntimeException(ex);
+                    }
                     break;
                 }
             }

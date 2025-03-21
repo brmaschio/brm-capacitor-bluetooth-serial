@@ -32,8 +32,10 @@ npx cap sync
 ### requestPermissions()
 
 ```typescript
-requestPermissions() => void
+requestPermissions() => Promise<{ hasPermitions: boolean; }>
 ```
+
+**Returns:** <code>Promise&lt;{ hasPermitions: boolean; }&gt;</code>
 
 --------------------
 
