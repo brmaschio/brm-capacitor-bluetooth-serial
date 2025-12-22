@@ -1,4 +1,4 @@
-package com.github.brmaschio.capacitorbluetoothserial.plugin;
+package com.github.brmaschio.capacitorbluetoothserial.plugin.core;
 
 import android.util.Log;
 
