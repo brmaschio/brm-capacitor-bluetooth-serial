@@ -11,9 +11,10 @@ export interface BrMCapacitorBluetoothSerialPlugin {
 
   requestPermissions(): Promise<{ hasPermitions: boolean }>;
   hasPermitions(): Promise<{ hasPermitions: boolean }>;
+  hasPermitionsBle(): Promise<{ hasPermitions: boolean }>;
   isEnabled(): Promise<{ isEnabled: boolean }>;
   listPairedDevices(): Promise<{ devices: Device[] }>;
-  scanBleDevices(timeout: number): Promise<{ devices: Device[] }>;
+  scanBleDevices(options: { timeout: number }): Promise<{ devices: Device[] }>;
   connect(options: { address: string, mode: EditorMode }): Promise<{ connected: boolean }>;
   connectBle(options: { address: string, mode: EditorMode }): Promise<{ connected: boolean }>;
   disconnect(options: { address: string }): Promise<{ disconnected: boolean }>;

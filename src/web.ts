@@ -14,6 +14,10 @@ export class BrMCapacitorBluetoothSerialWeb extends WebPlugin implements BrMCapa
     this.showWarn();
   }
 
+  async hasPermitionsBle(): Promise<any> {
+    this.showWarn();
+  }
+
   async isEnabled(): Promise<any> {
     this.showWarn();
   }

@@ -160,4 +160,7 @@ public class BluetoothLeService {
         }
     }
 
+    public boolean hasPermitions() {
+        return  bluetoothService.hasPermitions() && activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+    }
 }
