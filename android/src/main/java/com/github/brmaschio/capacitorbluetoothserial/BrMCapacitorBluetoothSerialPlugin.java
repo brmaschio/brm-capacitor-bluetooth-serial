@@ -64,7 +64,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void update d(PluginCall call) {
+    public void hasPermitionsBle(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("hasPermitions", bleService.hasPermitions());
         call.resolve(ret);
