@@ -1,7 +1,6 @@
 package com.github.brmaschio.capacitorbluetoothserial;
 
 import android.Manifest;
-import android.util.Log;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -10,12 +9,11 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
-import com.github.brmaschio.capacitorbluetoothserial.plugin.BluetoothPermissionException;
-import com.github.brmaschio.capacitorbluetoothserial.plugin.BluetoothService;
-import com.github.brmaschio.capacitorbluetoothserial.plugin.EditorMode;
-import com.github.brmaschio.capacitorbluetoothserial.plugin.Helper;
-
-import java.util.Arrays;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.service.BluetoothLeService;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.service.BluetoothService;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
 
 @CapacitorPlugin(
         name = "BrMCapacitorBluetoothSerial",
@@ -37,10 +35,12 @@ import java.util.Arrays;
 public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
     private BluetoothService btService;
+    private BluetoothLeService bleService;
 
     @Override
     public void load() {
         btService = new BluetoothService(getContext(), getActivity());
+        bleService = new BluetoothLeService(getContext(), getActivity(), btService);
     }
 
     @PluginMethod
@@ -83,15 +83,45 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void scanBleDevices(PluginCall call) {
+
+        Integer timeout = call.getInt("timeout");
+        timeout = timeout != null ? timeout : 5000;
+
+        try {
+            JSObject ret = new JSObject();
+            ret.put("devices", bleService.scanBleDevices(timeout));
+            call.resolve(ret);
+        } catch (BluetoothPermissionException e) {
+            call.reject(e.getMessage(), e);
+        }
+    }
+
+    @PluginMethod
     public void isConnected(PluginCall call) {
         String address = call.getString("address");
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
+            return;
         }
 
         JSObject response = new JSObject();
         response.put("isConnected", btService.isConnected(address));
+        call.resolve(response);
+    }
+
+    @PluginMethod
+    public void isConnectedBle(PluginCall call) {
+        String address = call.getString("address");
+
+        if (Helper.isEmpity(address)) {
+            call.reject("address not found");
+            return;
+        }
+
+        JSObject response = new JSObject();
+        response.put("isConnected", bleService.isConnectedBle(address));
         call.resolve(response);
     }
 
@@ -103,16 +133,38 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
+            return;
         }
 
         JSObject ret = new JSObject();
         try {
             boolean connected = btService.connect(address, editorMode);
             ret.put("connected", connected);
+            call.resolve(ret);
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);
         }
-        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void connectBle(PluginCall call) {
+        String address = call.getString("address");
+        String mode = call.getString("mode", EditorMode.TEXT.getDesc());
+        EditorMode editorMode = EditorMode.getByDesc(mode);
+
+        if (Helper.isEmpity(address)) {
+            call.reject("address not found");
+            return;
+        }
+
+        JSObject ret = new JSObject();
+        try {
+            boolean connected = bleService.connectBle(address, null, null, null, editorMode);
+            ret.put("connected", connected);
+            call.resolve(ret);
+        } catch (BluetoothPermissionException e) {
+            call.reject(e.getMessage(), e);
+        }
     }
 
     @PluginMethod
@@ -121,15 +173,34 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
+            return;
         }
 
         JSObject ret = new JSObject();
         try {
             ret.put("disconnected", btService.disconnect(address));
+            call.resolve(ret);
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);
         }
-        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void disconnectBle(PluginCall call) {
+        String address = call.getString("address");
+
+        if (Helper.isEmpity(address)) {
+            call.reject("address not found");
+            return;
+        }
+
+        JSObject ret = new JSObject();
+        try {
+            ret.put("disconnected", bleService.disconnectBle(address));
+            call.resolve(ret);
+        } catch (BluetoothPermissionException e) {
+            call.reject(e.getMessage(), e);
+        }
     }
 
     @PluginMethod
@@ -139,17 +210,41 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
+            return;
         }
         if (Helper.isEmpity(command)) {
             call.reject("command not found");
+            return;
         }
 
         try {
             btService.write(address, command);
+            call.resolve();
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);
         }
-        call.resolve();
+    }
+
+    @PluginMethod
+    public void writeBle(PluginCall call) {
+        String address = call.getString("address");
+        String command = call.getString("command");
+
+        if (Helper.isEmpity(address)) {
+            call.reject("address not found");
+            return;
+        }
+        if (Helper.isEmpity(command)) {
+            call.reject("command not found");
+            return;
+        }
+
+        try {
+            bleService.writeBle(address, command);
+            call.resolve();
+        } catch (BluetoothPermissionException e) {
+            call.reject(e.getMessage(), e);
+        }
     }
 
     @PluginMethod
@@ -158,15 +253,34 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
+            return;
         }
 
         JSObject ret = new JSObject();
         try {
             ret.put("data", btService.read(address));
+            call.resolve(ret);
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);
         }
-        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void readBle(PluginCall call) {
+        String address = call.getString("address");
+
+        if (Helper.isEmpity(address)) {
+            call.reject("address not found");
+            return;
+        }
+
+        JSObject ret = new JSObject();
+        try {
+            ret.put("data", bleService.readBle(address));
+            call.resolve(ret);
+        } catch (BluetoothPermissionException e) {
+            call.reject(e.getMessage(), e);
+        }
     }
 
 }

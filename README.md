@@ -23,8 +23,6 @@ npx cap sync
 * [`requestPermissions()`](#requestpermissions)
 * [`isEnabled()`](#isenabled)
 * [`listPairedDevices()`](#listpaireddevices)
-
-
 * [`connect(...)`](#connect)
 * [`disconnect(...)`](#disconnect)
 * [`isConnected(...)`](#isconnected)
@@ -122,16 +120,6 @@ BrMCapacitorBluetoothSerial.listPairedDevices().then(response => {
 ```
 
 --------------------
-
-
-
-
-
-
-
-
-
-
 
 ### connect(...)
 

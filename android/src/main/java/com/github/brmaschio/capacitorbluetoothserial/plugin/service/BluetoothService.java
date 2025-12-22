@@ -1,4 +1,4 @@
-package com.github.brmaschio.capacitorbluetoothserial.plugin;
+package com.github.brmaschio.capacitorbluetoothserial.plugin.service;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -11,12 +11,14 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.annotation.PermissionCallback;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.BluetoothConnection;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,7 +69,6 @@ public class BluetoothService {
                 .concat(" hasBluetoothFeature: ").concat(String.valueOf(hasBluetoothFeature))
                 .concat(" hasPermitions: ").concat(String.valueOf(hasPermitions))
                 .concat(" bluetoothAdapterIsEnabled: ").concat(String.valueOf(bluetoothAdapterIsEnabled));
-        Log.i(Helper.TAG, logMsg);
 
         return hasBluetoothFeature && hasPermitions && bluetoothAdapterIsEnabled;
     }
@@ -99,7 +100,6 @@ public class BluetoothService {
     }
 
     public boolean isConnected(String address) {
-        Log.i(Helper.TAG, "Check if device is already connected");
         BluetoothConnection connection = getConnection(address);
         if (connection != null) {
             return connection.isConnected();
@@ -113,7 +113,6 @@ public class BluetoothService {
 
         BluetoothConnection connection = getConnection(address);
         if (connection != null && connection.isConnected()) {
-            Log.i(Helper.TAG, "Device already connected");
             return true;
         }
 
@@ -150,8 +149,6 @@ public class BluetoothService {
 
     public void write(String address, String command) throws BluetoothPermissionException {
 
-        Log.i(Helper.TAG, "Trying write command");
-
         BluetoothConnection connection;
         synchronized (this) {
             connection = getConnection(address);
@@ -163,29 +160,21 @@ public class BluetoothService {
 
         if (connection.getEditorMode().equals(EditorMode.HEX)) {
             byte[] bytes = Helper.hexStringToByteArray(command);
-            Log.i(Helper.TAG, "Command HEX: " + command + " | Bytes: " + Arrays.toString(bytes));
             connection.write(bytes);
         } else {
             byte[] bytes = Helper.toByteArray(command);
-            Log.i(Helper.TAG, "Command TEXT: " + command + " | Bytes: " + Arrays.toString(bytes));
             connection.write(bytes);
         }
-
-        Log.i(Helper.TAG, "Success write command");
 
     }
 
     public String read(String address) throws BluetoothPermissionException {
-
-        Log.i(Helper.TAG, "Trying read");
-
         BluetoothConnection connection = getConnection(address);
         if (connection == null || !connection.isConnected()) {
             throw new BluetoothPermissionException("Device not found");
         }
 
         String data = connection.read();
-        Log.i(Helper.TAG, "Success read, data: " + data);
         return data;
 
     }

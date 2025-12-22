@@ -14,7 +14,15 @@ export class BrMCapacitorBluetoothSerialWeb extends WebPlugin implements BrMCapa
     this.showWarn();
   }
 
+  async isEnabled(): Promise<any> {
+    this.showWarn();
+  }
+
   async listPairedDevices(): Promise<any> {
+    this.showWarn();
+  }
+
+  async scanBleDevices(): Promise<any> {
     this.showWarn();
   }
 
@@ -22,11 +30,15 @@ export class BrMCapacitorBluetoothSerialWeb extends WebPlugin implements BrMCapa
     this.showWarn();
   }
 
+  async connectBle(): Promise<any> {
+    this.showWarn();
+  }
+
   async disconnect(): Promise<any> {
     this.showWarn();
   }
-  
-  async isEnabled(): Promise<any> {
+
+  async disconnectBle(): Promise<any> {
     this.showWarn();
   }
 
@@ -34,11 +46,23 @@ export class BrMCapacitorBluetoothSerialWeb extends WebPlugin implements BrMCapa
     this.showWarn();
   }
 
+  async isConnectedBle(): Promise<any> {
+    this.showWarn();
+  }
+
   async write(): Promise<any> {
     this.showWarn();
   }
 
+  async writeBle(): Promise<any> {
+    this.showWarn();
+  }
+
   async read(): Promise<any> {
+    this.showWarn();
+  }
+
+  async readBle(): Promise<any> {
     this.showWarn();
   }
 
