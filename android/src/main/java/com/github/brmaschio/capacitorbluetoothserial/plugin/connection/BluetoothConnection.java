@@ -1,9 +1,12 @@
-package com.github.brmaschio.capacitorbluetoothserial.plugin;
+package com.github.brmaschio.capacitorbluetoothserial.plugin.connection;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
+
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,8 +15,8 @@ import java.io.OutputStream;
 public class BluetoothConnection extends Thread {
 
     private BluetoothSocket socket = null;
-    private InputStream inputStream;
-    private OutputStream outputStream;
+    private InputStream reader;
+    private OutputStream writer;
     private final StringBuffer readBuffer;
     private boolean connected = false;
     private final EditorMode editorMode;
@@ -30,7 +33,7 @@ public class BluetoothConnection extends Thread {
         while (true) {
             if (connected) {
                 try {
-                    int bytesRead = inputStream.read(buffer);
+                    int bytesRead = reader.read(buffer);
                     if(this.editorMode.equals(EditorMode.HEX)) {
                         appendToBuffer(Helper.bytesToHex(buffer, bytesRead));
                     } else {
@@ -41,7 +44,6 @@ public class BluetoothConnection extends Thread {
                         disconnect();
                     } catch (BluetoothPermissionException ex) {
                         connected = false;
-                        Log.e(Helper.TAG, "Fail disconnect on run process");
                         throw new RuntimeException(ex);
                     }
                     break;
@@ -71,7 +73,7 @@ public class BluetoothConnection extends Thread {
 
     public void write(byte[] bytes) throws BluetoothPermissionException {
         try {
-            outputStream.write(bytes);
+            writer.write(bytes);
         } catch (IOException e) {
             throw new BluetoothPermissionException("Erro To write");
         }
@@ -92,8 +94,8 @@ public class BluetoothConnection extends Thread {
         try {
             socket = device.createRfcommSocketToServiceRecord(Helper.DEFAULT_UUID);
             socket.connect();
-            outputStream = socket.getOutputStream();
-            inputStream = socket.getInputStream();
+            writer = socket.getOutputStream();
+            reader = socket.getInputStream();
             connected = true;
         } catch (IOException e) {
             connected = false;

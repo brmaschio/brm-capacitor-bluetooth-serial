@@ -1,4 +1,4 @@
-package com.github.brmaschio.capacitorbluetoothserial.plugin;
+package com.github.brmaschio.capacitorbluetoothserial.plugin.core;
 
 public enum EditorMode {
 
