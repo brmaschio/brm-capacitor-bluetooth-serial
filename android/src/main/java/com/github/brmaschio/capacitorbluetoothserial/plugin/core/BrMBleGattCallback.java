@@ -53,14 +53,18 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+
+        if (!parentConnection.running) return;
+
         super.onCharacteristicRead(gatt, characteristic, status);
         if (status == BluetoothGatt.GATT_SUCCESS && characteristic.getUuid().equals(parentConnection.readerUuid)) {
-            byte[] value = characteristic.getValue();
-            try {
-                parentConnection.readBuffer.put(value);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            parentConnection.readBuffer.offer(characteristic.getValue());
+//            byte[] value = characteristic.getValue();
+//            try {
+//                parentConnection.readBuffer.put(value);
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
         }
     }
 
@@ -71,15 +75,18 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
 
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+
+        if (!parentConnection.running) return;
+
         super.onCharacteristicChanged(gatt, characteristic);
-        // Este callback é acionado quando a característica de leitura envia uma NOTIFICAÇÃO/INDICAÇÃO
         if (characteristic.getUuid().equals(parentConnection.readerUuid)) {
             byte[] value = characteristic.getValue();
-            try {
-                parentConnection.readBuffer.put(value);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            parentConnection.readBuffer.offer(value);
+//            try {
+//                parentConnection.readBuffer.put(value);
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//            }
         }
     }
 
