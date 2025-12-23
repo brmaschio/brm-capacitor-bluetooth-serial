@@ -28,6 +28,7 @@ public class BluetoothLeConnection extends Thread  {
     public final BluetoothDevice device;
     private UUID serviceUuid;
 
+    public volatile boolean running = true;
     private BluetoothGatt socket;
     private BluetoothGattCharacteristic reader;
     public UUID readerUuid;
@@ -52,6 +53,10 @@ public class BluetoothLeConnection extends Thread  {
 
     @SuppressLint("MissingPermission")
     public void disconnect() {
+
+        running = false;
+        readBuffer.offer(new byte[0]);
+
         if (this.socket != null && connected) {
             this.socket.disconnect();
         }
@@ -77,6 +82,9 @@ public class BluetoothLeConnection extends Thread  {
     }
 
     public String read() throws BluetoothPermissionException {
+
+        if (!running) return null;
+
         byte[] dataBytes = null;
         try {
             dataBytes = this.readBuffer.poll(5, TimeUnit.SECONDS);
@@ -122,6 +130,7 @@ public class BluetoothLeConnection extends Thread  {
         this.serviceUuid = null;
         this.readerUuid = null;
         this.writerUuid = null;
+        this.running = false;
         this.readBuffer.clear();
     }
 
