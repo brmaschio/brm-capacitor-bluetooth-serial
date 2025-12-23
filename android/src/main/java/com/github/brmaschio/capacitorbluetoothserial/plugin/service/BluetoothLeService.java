@@ -111,7 +111,7 @@ public class BluetoothLeService {
         }
 
         BluetoothLeConnection connection = connectionsBleInstances.get(address);
-        if (connection == null || !connection.isConnected()) {
+        if (connection == null) {
             return true;
         }
 
@@ -135,7 +135,7 @@ public class BluetoothLeService {
         if (connection.editorMode.equals(EditorMode.HEX)) {
             bytes = Helper.hexStringToByteArray(command);
         } else {
-            bytes = command.getBytes(); // Assumindo UTF-8 default, adapte se necessário
+            bytes = command.getBytes(); // UTF-8 default
         }
         connection.write(bytes);
     }
