@@ -6,6 +6,14 @@ export class BrMCapacitorBluetoothSerialWeb extends WebPlugin implements BrMCapa
 
   private msg = 'Not supported att web';
 
+  override addListener(eventName: 'dataReceived', listenerFunc: (event: any) => void): Promise<any> & any;
+
+  override addListener(eventName: 'connectionStatusChange', listenerFunc: (event: any) => void): Promise<any> & any;
+
+  override addListener(eventName: string, listenerFunc: (event: any) => void): Promise<any> & any {
+    return super.addListener(eventName, listenerFunc) as Promise<any> & any;
+  }
+
   async requestPermissions(): Promise<any> {
     this.showWarn();
   }

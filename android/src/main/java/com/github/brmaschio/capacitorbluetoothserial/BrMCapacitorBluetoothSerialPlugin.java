@@ -39,8 +39,15 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
     @Override
     public void load() {
-        btService = new BluetoothService(getContext(), getActivity());
-        bleService = new BluetoothLeService(getContext(), getActivity(), btService);
+        btService = new BluetoothService(getContext(), getActivity(), this);
+        bleService = new BluetoothLeService(getContext(), getActivity(), btService, this);
+    }
+
+    public void notifyDataReceived(String address, String data) {
+        JSObject ret = new JSObject();
+        ret.put("address", address);
+        ret.put("data", data);
+        notifyListeners("dataReceived", ret);
     }
 
     @PluginMethod

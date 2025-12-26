@@ -39,7 +39,6 @@ public class BrMBleScanCallback extends ScanCallback {
     @Override
     public void onScanFailed(int errorCode) {
         super.onScanFailed(errorCode);
-        Log.e(Helper.TAG, "BLE scan failed with error code: " + errorCode);
     }
 
     @SuppressLint("MissingPermission")
@@ -51,7 +50,6 @@ public class BrMBleScanCallback extends ScanCallback {
             json.put("address", device.getAddress());
             devices.put(json);
             discoveredAddresses.add(device.getAddress());
-            Log.i(Helper.TAG, "BLE device found.: " + device.getName() + " (" + device.getAddress() + ")");
         }
     }
 

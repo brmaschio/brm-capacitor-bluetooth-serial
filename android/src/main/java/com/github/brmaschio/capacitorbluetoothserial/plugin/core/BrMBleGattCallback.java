@@ -1,12 +1,11 @@
 package com.github.brmaschio.capacitorbluetoothserial.plugin.core;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
-import android.content.pm.PackageManager;
 
 import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.BluetoothLeConnection;
 
@@ -14,21 +13,13 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
 
     private final BluetoothLeConnection parentConnection;
 
-    public BrMBleGattCallback(BluetoothLeConnection parentConnection) {
-        this.parentConnection = parentConnection;
-    }
-
     @Override
+    @SuppressLint("MissingPermission")
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         super.onConnectionStateChange(gatt, status, newState);
         if (status == BluetoothGatt.GATT_SUCCESS) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                parentConnection.connected = true;
-                if (parentConnection.context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    gatt.discoverServices();
-                } else {
-                    parentConnection.disconnectAndCleanUp(gatt);
-                }
+                gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 parentConnection.disconnectAndCleanUp(gatt);
             }
@@ -37,16 +28,23 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
         }
     }
 
+    public BrMBleGattCallback(BluetoothLeConnection parentConnection) {
+        this.parentConnection = parentConnection;
+    }
+
     @Override
     public void onServicesDiscovered(BluetoothGatt gatt, int status) {
         super.onServicesDiscovered(gatt, status);
         if (status == BluetoothGatt.GATT_SUCCESS) {
             try {
                 parentConnection.findCharacteristicsAndEnableNotifications(gatt);
+                parentConnection.notifyConnectionSuccess();
             } catch (BluetoothPermissionException e) {
+                parentConnection.notifyConnectionFailure(e.getMessage());
                 parentConnection.disconnectAndCleanUp(gatt);
             }
         } else {
+            parentConnection.notifyConnectionFailure("Service discovery failed");
             parentConnection.disconnectAndCleanUp(gatt);
         }
     }
@@ -81,12 +79,8 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
         super.onCharacteristicChanged(gatt, characteristic);
         if (characteristic.getUuid().equals(parentConnection.readerUuid)) {
             byte[] value = characteristic.getValue();
-            parentConnection.readBuffer.offer(value);
-//            try {
-//                parentConnection.readBuffer.put(value);
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
+//            parentConnection.readBuffer.offer(value);
+            parentConnection.onDataReceived(value);
         }
     }
 

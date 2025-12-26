@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
+import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerialPlugin;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
@@ -11,8 +12,12 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 public class BluetoothConnection extends Thread {
+
+    private final BrMCapacitorBluetoothSerialPlugin plugin;
+    private final BluetoothDevice device;
 
     private BluetoothSocket socket = null;
     private InputStream reader;
@@ -22,41 +27,52 @@ public class BluetoothConnection extends Thread {
     private final EditorMode editorMode;
 
     @SuppressLint("MissingPermission")
-    public BluetoothConnection(BluetoothDevice device, EditorMode editorMode) throws BluetoothPermissionException {
+    public BluetoothConnection(BluetoothDevice device, EditorMode editorMode,
+                               BrMCapacitorBluetoothSerialPlugin plugin) throws BluetoothPermissionException {
+        this.plugin = plugin;
+        this.device = device;
         this.editorMode = editorMode;
-        connect(device);
+        connect();
         readBuffer = new StringBuffer();
     }
 
     public void run() {
         byte[] buffer = new byte[1024];
-        while (true) {
-            if (connected) {
-                try {
-                    int bytesRead = reader.read(buffer);
-                    if(this.editorMode.equals(EditorMode.HEX)) {
-                        appendToBuffer(Helper.bytesToHex(buffer, bytesRead));
-                    } else {
-                        appendToBuffer(new String(buffer, 0, bytesRead));
-                    }
-                } catch (IOException e) {
-                    try {
-                        disconnect();
-                    } catch (BluetoothPermissionException ex) {
-                        connected = false;
-                        throw new RuntimeException(ex);
-                    }
-                    break;
+        while (connected) {
+            try {
+                int bytesRead = reader.read(buffer);
+                if (bytesRead > 0) {
+                    byte[] data = Arrays.copyOf(buffer, bytesRead);
                 }
+
+                String data;
+                if (this.editorMode.equals(EditorMode.HEX)) {
+                    data = Helper.bytesToHex(buffer, bytesRead);
+                } else {
+                    data = new String(buffer, 0, bytesRead);
+                }
+
+                data = data.trim().isEmpty() ? null : data;
+                plugin.notifyDataReceived(device.getAddress(), data);
+
+            } catch (IOException e) {
+                try {
+                    disconnect();
+                } catch (BluetoothPermissionException ex) {
+                    connected = false;
+                    throw new RuntimeException(ex);
+                }
+                break;
             }
+
         }
     }
 
-    private void appendToBuffer(String data) {
-        synchronized (this.readBuffer) {
-            this.readBuffer.append(data);
-        }
-    }
+//    private void appendToBuffer(String data) {
+//        synchronized (this.readBuffer) {
+//            this.readBuffer.append(data);
+//        }
+//    }
 
     public void disconnect() throws BluetoothPermissionException {
         try {
@@ -90,9 +106,9 @@ public class BluetoothConnection extends Thread {
     }
 
     @SuppressLint("MissingPermission")
-    private void connect(BluetoothDevice device) throws BluetoothPermissionException {
+    private void connect() throws BluetoothPermissionException {
         try {
-            socket = device.createRfcommSocketToServiceRecord(Helper.DEFAULT_UUID);
+            socket = this.device.createRfcommSocketToServiceRecord(Helper.DEFAULT_UUID);
             socket.connect();
             writer = socket.getOutputStream();
             reader = socket.getInputStream();

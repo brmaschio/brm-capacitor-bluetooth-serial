@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 
 import com.getcapacitor.JSArray;
+import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerialPlugin;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.BluetoothLeConnection;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BrMBleScanCallback;
@@ -28,13 +29,15 @@ public class BluetoothLeService {
     private final Activity activity;
     private final BluetoothService bluetoothService;
     private final BluetoothAdapter bluetoothAdapter;
+    private final BrMCapacitorBluetoothSerialPlugin plugin;
 
     private final Map<String, BluetoothLeConnection> connectionsBleInstances = new ConcurrentHashMap<>();
 
-    public BluetoothLeService(Context context, Activity activity, BluetoothService bluetoothService) {
+    public BluetoothLeService(Context context, Activity activity, BluetoothService bluetoothService, BrMCapacitorBluetoothSerialPlugin plugin) {
         // context
         this.context = context;
         this.activity = activity;
+        this.plugin = plugin;
         // service
         this.bluetoothService = bluetoothService;
         // bluetooth core
@@ -89,12 +92,19 @@ public class BluetoothLeService {
         UUID writeCharacteristicUuid = (writeCharacteristicUuidStr != null && !writeCharacteristicUuidStr.isEmpty()) ? UUID.fromString(writeCharacteristicUuidStr) : null;
 
         try {
-            BluetoothLeConnection bleConnection = new BluetoothLeConnection(
-                    context, device, editorMode, serviceUuid, readCharacteristicUuid, writeCharacteristicUuid
-            );
+            BluetoothLeConnection bleConnection = new BluetoothLeConnection(context, device, editorMode,
+                    serviceUuid, readCharacteristicUuid, writeCharacteristicUuid, this.plugin);
             connectionsBleInstances.put(address, bleConnection);
             bleConnection.start();
-            return true;
+
+            boolean isReady = bleConnection.waitForConnection(15000);
+            if (isReady) {
+                return true;
+            } else {
+                connectionsBleInstances.remove(address);
+                return false;
+            }
+
         } catch (IllegalArgumentException e) {
             throw new BluetoothPermissionException("Invalid UUID provided: " + e.getMessage());
         } catch (BluetoothPermissionException e) {

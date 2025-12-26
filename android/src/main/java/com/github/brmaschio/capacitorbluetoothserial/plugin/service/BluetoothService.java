@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerialPlugin;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
@@ -28,13 +29,15 @@ public class BluetoothService {
 
     private final Context context;
     private final Activity activity;
+    private final BrMCapacitorBluetoothSerialPlugin plugin;
 
     private final Map<String, BluetoothConnection> connections = new HashMap<>();
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-    public BluetoothService(Context context, Activity activity) {
+    public BluetoothService(Context context, Activity activity, BrMCapacitorBluetoothSerialPlugin plugin) {
         this.context = context;
         this.activity = activity;
+        this.plugin = plugin;
     }
 
     public boolean hasPermitions() {
@@ -65,16 +68,10 @@ public class BluetoothService {
             activity.startActivityForResult(enableBtIntent, 200);
         }
 
-        String logMsg = "Check is enabled."
-                .concat(" hasBluetoothFeature: ").concat(String.valueOf(hasBluetoothFeature))
-                .concat(" hasPermitions: ").concat(String.valueOf(hasPermitions))
-                .concat(" bluetoothAdapterIsEnabled: ").concat(String.valueOf(bluetoothAdapterIsEnabled));
-
         return hasBluetoothFeature && hasPermitions && bluetoothAdapterIsEnabled;
     }
 
     public String loadPermissionsAlias() {
-        Log.i(Helper.TAG, "Request BLUETOOTH Permissions");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return "BLUETOOTH";
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -109,7 +106,9 @@ public class BluetoothService {
 
     public boolean connect(String address, EditorMode editorMode) throws BluetoothPermissionException {
 
-        Log.i(Helper.TAG, "Trying to connect with device");
+        if(!hasPermitions()) {
+            throw new BluetoothPermissionException("Without Permission");
+        }
 
         BluetoothConnection connection = getConnection(address);
         if (connection != null && connection.isConnected()) {
@@ -121,30 +120,22 @@ public class BluetoothService {
             throw new BluetoothPermissionException("Device not found");
         }
 
-        connection = new BluetoothConnection(device, editorMode);
+        connection = new BluetoothConnection(device, editorMode, this.plugin);
         connection.start();
         connections.put(device.getAddress(), connection);
-        Log.i(Helper.TAG, "Success connecting to device");
         return true;
 
     }
 
     public boolean disconnect(String address) throws BluetoothPermissionException {
-
-        Log.i(Helper.TAG, "Trying to disconnect with device");
-
         BluetoothConnection connection = getConnection(address);
         if (connection == null || !connection.isConnected()) {
-            Log.i(Helper.TAG, "Device disconnected");
             return true;
         }
 
         connection.disconnect();
         connections.remove(address);
-        Log.i(Helper.TAG, "Successful disconnection from device");
-
         return true;
-
     }
 
     public void write(String address, String command) throws BluetoothPermissionException {
@@ -173,10 +164,7 @@ public class BluetoothService {
         if (connection == null || !connection.isConnected()) {
             throw new BluetoothPermissionException("Device not found");
         }
-
-        String data = connection.read();
-        return data;
-
+        return connection.read();
     }
 
     private BluetoothConnection getConnection(String address) {
