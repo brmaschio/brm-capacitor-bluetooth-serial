@@ -1,10 +1,22 @@
-export enum EditorMode{
+import type { PluginListenerHandle } from '@capacitor/core';
+
+export enum EditorMode {
   TEXT = "TEXT", HEX = "HEX"
 }
 
 export interface Device {
   name: string;
   address: string;
+}
+
+export interface ConnectionStatusEvent {
+  address: string;
+  connected: boolean;
+}
+
+export interface BluetoothDataEvent {
+  address: string;
+  data: string;
 }
 
 export interface BrMCapacitorBluetoothSerialPlugin {
@@ -25,5 +37,8 @@ export interface BrMCapacitorBluetoothSerialPlugin {
   writeBle(options: { address: string, command: string }): Promise<void>;
   read(options: { address: string }): Promise<{ data: boolean }>;
   readBle(options: { address: string }): Promise<{ data: boolean }>;
+  addListener(eventName: 'dataReceived', listenerFunc: (event: BluetoothDataEvent) => void): Promise<PluginListenerHandle> & PluginListenerHandle;
+  addListener(eventName: 'connectionStatusChange', listenerFunc: (event: ConnectionStatusEvent) => void): Promise<PluginListenerHandle> & PluginListenerHandle;
+  removeAllListeners(): Promise<void>;
 
 }

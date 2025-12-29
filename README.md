@@ -19,25 +19,27 @@ npx cap sync
 
 ## API
 
-* [`requestPermissions()`](#requestpermissions)
-* [`hasPermitions()`](#haspermitions)
-* [`hasPermitionsBle()`](#hasPermitionsBle)
-* [`isEnabled()`](#isenabled)
-* [`listPairedDevices()`](#listpaireddevices)
-* [`scanBleDevices()`](#scanBleDevices)
-* [`connect(...)`](#connect)
-* [`connectBle(...)`](#connectBle)
-* [`disconnect(...)`](#disconnect)
-* [`disconnectBle(...)`](#disconnectBle)
-* [`isConnected(...)`](#isconnected)
-* [`isConnectedBle(...)`](#isConnectedBle)
-* [`write(...)`](#write)
-* [`writeBle(...)`](#writeBle)
-* [`read(...)`](#read)
-* [`readBle(...)`](#readBle)
-* [Enums](#enums)
+- [`requestPermissions()`](#requestpermissions)
+- [`hasPermitions()`](#haspermitions)
+- [`hasPermitionsBle()`](#hasPermitionsBle)
+- [`isEnabled()`](#isenabled)
+- [`listPairedDevices()`](#listpaireddevices)
+- [`scanBleDevices()`](#scanBleDevices)
+- [`connect(...)`](#connect)
+- [`connectBle(...)`](#connectBle)
+- [`disconnect(...)`](#disconnect)
+- [`disconnectBle(...)`](#disconnectBle)
+- [`isConnected(...)`](#isconnected)
+- [`isConnectedBle(...)`](#isConnectedBle)
+- [`write(...)`](#write)
+- [`writeBle(...)`](#writeBle)
+- [`read(...)`](#read)
+- [`readBle(...)`](#readBle)
+- [`addListener(...)`](#addListener)
+- [`removeAllListeners(...)`](#removeAllListeners)
+- [Enums](#enums)
 
---------------------
+---
 
 ### requestPermissions()
 
@@ -52,14 +54,16 @@ requestPermissions() => Promise<{ hasPermitions: boolean; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.requestPermissions().then(response => {
+BrMCapacitorBluetoothSerial.requestPermissions()
+  .then((response) => {
     console.log('hasPermitions', response.hasPermitions);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### hasPermitions()
 
@@ -71,22 +75,23 @@ hasPermitions() => Promise<{ hasPermitions: boolean; }>
 
 **Returns:** <code>Promise&lt;{ hasPermitions: boolean; }&gt;</code>
 
-
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.hasPermitions().then(response => {
-     console.log('hasPermitions', response.hasPermitions);
-}).catch(() => {
+BrMCapacitorBluetoothSerial.hasPermitions()
+  .then((response) => {
+    console.log('hasPermitions', response.hasPermitions);
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### hasPermitionsBle()
 
-Check if bluetooth permissions are granted and *low energy* permission is granted..
+Check if bluetooth permissions are granted and _low energy_ permission is granted..
 
 ```typescript
 hasPermitionsBle() => Promise<{ hasPermitions: boolean; }>
@@ -94,18 +99,19 @@ hasPermitionsBle() => Promise<{ hasPermitions: boolean; }>
 
 **Returns:** <code>Promise&lt;{ hasPermitions: boolean; }&gt;</code>
 
-
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.hasPermitionsBle().then(response => {
-     console.log('hasPermitions', response.hasPermitions);
-}).catch(() => {
+BrMCapacitorBluetoothSerial.hasPermitionsBle()
+  .then((response) => {
+    console.log('hasPermitions', response.hasPermitions);
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### isEnabled()
 
@@ -120,14 +126,16 @@ isEnabled() => Promise<{ isEnabled: boolean; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.isEnabled().then(response => {
+BrMCapacitorBluetoothSerial.isEnabled()
+  .then((response) => {
     console.log('isEnabled', response.isEnabled);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### listPairedDevices()
 
@@ -142,14 +150,16 @@ listPairedDevices() => Promise<{ devices: Device[]; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.listPairedDevices().then(response => {
+BrMCapacitorBluetoothSerial.listPairedDevices()
+  .then((response) => {
     console.log('devices', response.devices);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### scanBleDevices()
 
@@ -170,14 +180,16 @@ If the timeout is not specified, the default is 5000ms.
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.scanBleDevices().then(response => {
+BrMCapacitorBluetoothSerial.scanBleDevices()
+  .then((response) => {
     console.log('devices', response.devices);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### connect(...)
 
@@ -196,14 +208,16 @@ connect(options: { address: string; mode: EditorMode; }) => Promise<{ connected:
 ```typescript
 import { BrMCapacitorBluetoothSerial, EditorMode } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.connect({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT }).then(response => {
+BrMCapacitorBluetoothSerial.connect({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT })
+  .then((response) => {
     console.log('connected', response.connected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### connectBle(...)
 
@@ -222,14 +236,16 @@ connectBle(options: { address: string; mode: EditorMode; }) => Promise<{ connect
 ```typescript
 import { BrMCapacitorBluetoothSerial, EditorMode } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.connectBle({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT }).then(response => {
+BrMCapacitorBluetoothSerial.connectBle({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT })
+  .then((response) => {
     console.log('connected', response.connected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### disconnect(...)
 
@@ -245,18 +261,19 @@ disconnect(options: { address: string; }) => Promise<{ disconnected: boolean; }>
 
 **Returns:** <code>Promise&lt;{ disconnected: boolean; }&gt;</code>
 
-
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.disconnect({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.disconnect({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('disconnected', response.disconnected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### disconnectBle(...)
 
@@ -272,18 +289,19 @@ disconnectBle(options: { address: string; }) => Promise<{ disconnected: boolean;
 
 **Returns:** <code>Promise&lt;{ disconnected: boolean; }&gt;</code>
 
-
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.disconnectBle({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.disconnectBle({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('disconnected', response.disconnected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### isConnected(...)
 
@@ -302,15 +320,16 @@ isConnected(options: { address: string; }) => Promise<{ isConnected: boolean; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.isConnected({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.isConnected({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('isConnected', response.isConnected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
-
+---
 
 ### isConnectedBle(...)
 
@@ -329,14 +348,16 @@ isConnectedBle(options: { address: string; }) => Promise<{ isConnected: boolean;
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.isConnectedBle({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.isConnectedBle({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('isConnected', response.isConnected);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### write(...)
 
@@ -353,14 +374,16 @@ write(options: { address: string; command: string; }) => Promise<void>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.write({ address: '00:11:22:33:44:55', command: 'Hello' }).then(() => {
+BrMCapacitorBluetoothSerial.write({ address: '00:11:22:33:44:55', command: 'Hello' })
+  .then(() => {
     console.log('sucess');
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### writeBle(...)
 
@@ -377,11 +400,13 @@ writeBle(options: { address: string; command: string; }) => Promise<void>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.writeBle({ address: '00:11:22:33:44:55', command: 'Hello' }).then(() => {
+BrMCapacitorBluetoothSerial.writeBle({ address: '00:11:22:33:44:55', command: 'Hello' })
+  .then(() => {
     console.log('sucess');
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
 ### read(...)
@@ -399,14 +424,16 @@ read(options: { address: string; }) => Promise<{ data: boolean; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.read({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.read({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('response data', response.data);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
 ### readBle(...)
 
@@ -423,15 +450,57 @@ readBle(options: { address: string; }) => Promise<{ data: boolean; }>
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.readBle({ address: '00:11:22:33:44:55' }).then(response => {
+BrMCapacitorBluetoothSerial.readBle({ address: '00:11:22:33:44:55' })
+  .then((response) => {
     console.log('response data', response.data);
-}).catch(() => {
+  })
+  .catch(() => {
     console.log('Error');
-});
+  });
 ```
 
---------------------
+---
 
+### addListener
+
+```typescript
+import { BrMCapacitorBluetoothSerial } from 'seu-plugin-aqui';
+import { PluginListenerHandle } from '@capacitor/core';
+
+let dataListener: PluginListenerHandle | null = null;
+
+async function startListeningForData() {
+  dataListener = await BrMCapacitorBluetoothSerial.addListener('dataReceived', (event) => {
+    console.log(`${event.address}: ${event.data}`);
+  });
+}
+
+async function startListeningForStatus() {
+  statusListener = await BrMCapacitorBluetoothSerial.addListener('connectionStatusChange', (event) => {
+    console.log(`${event.address} ${event.connected}`);
+  });
+}
+```
+
+---
+
+### removeAllListeners
+
+```typescript
+import { BrMCapacitorBluetoothSerial } from 'seu-plugin-aqui';
+import { PluginListenerHandle } from '@capacitor/core';
+
+let dataListener: PluginListenerHandle | null = null;
+
+function stopListeningForData() {
+  if (dataListener) {
+    dataListener.remove();
+    dataListener = null;
+  }
+}
+```
+
+---
 
 ### Enums
 
@@ -441,4 +510,3 @@ BrMCapacitorBluetoothSerial.readBle({ address: '00:11:22:33:44:55' }).then(respo
 | ---------- | ------------------- |
 | **`TEXT`** | <code>"TEXT"</code> |
 | **`HEX`**  | <code>"HEX"</code>  |
-

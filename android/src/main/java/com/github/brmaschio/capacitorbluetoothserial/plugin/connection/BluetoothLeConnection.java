@@ -8,9 +8,11 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
+import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerialPlugin;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BrMBleGattCallback;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
@@ -20,15 +22,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class BluetoothLeConnection extends Thread  {
+public class BluetoothLeConnection extends Thread {
 
     public final Context context;
     public final BluetoothDevice device;
     private UUID serviceUuid;
 
     public volatile boolean running = true;
+    private final CountDownLatch connectionLatch = new CountDownLatch(1);
+    private String connectionError = null;
+
     private BluetoothGatt socket;
     private BluetoothGattCharacteristic reader;
     public UUID readerUuid;
@@ -38,9 +44,13 @@ public class BluetoothLeConnection extends Thread  {
     public final EditorMode editorMode;
     public boolean connected = false;
 
+    private final BrMCapacitorBluetoothSerialPlugin plugin;
+
     @SuppressLint("MissingPermission")
     public BluetoothLeConnection(Context context, BluetoothDevice device, EditorMode editorMode,
-                                 UUID serviceUuid, UUID readerUuid, UUID writerUuid) throws BluetoothPermissionException {
+                                 UUID serviceUuid, UUID readerUuid, UUID writerUuid,
+                                 BrMCapacitorBluetoothSerialPlugin plugin) throws BluetoothPermissionException {
+        this.plugin = plugin;
         this.serviceUuid = serviceUuid;
         this.readerUuid = readerUuid;
         this.writerUuid = writerUuid;
@@ -60,6 +70,7 @@ public class BluetoothLeConnection extends Thread  {
         if (this.socket != null && connected) {
             this.socket.disconnect();
         }
+
         disconnectAndCleanUp(this.socket);
     }
 
@@ -85,20 +96,8 @@ public class BluetoothLeConnection extends Thread  {
 
         if (!running) return null;
 
-        byte[] dataBytes = null;
-        try {
-            dataBytes = this.readBuffer.poll(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new BluetoothPermissionException("Fail disconnect on run process");
-        }
-
-        if (dataBytes == null) {
-            if (!this.connected) {
-                throw new BluetoothPermissionException("Fail disconnect on run process");
-            }
-            return null;
-        }
+        byte[] dataBytes = this.readBuffer.poll();
+        if (dataBytes == null) return null;
 
         String data;
         if (this.editorMode.equals(EditorMode.HEX)) {
@@ -108,6 +107,21 @@ public class BluetoothLeConnection extends Thread  {
         }
 
         return data.trim().isEmpty() ? null : data;
+
+    }
+
+    public void onDataReceived(byte[] dataBytes) {
+        if (dataBytes == null || dataBytes.length == 0) return;
+
+        String data;
+        if (this.editorMode.equals(EditorMode.HEX)) {
+            data = Helper.bytesToHex(dataBytes, dataBytes.length);
+        } else {
+            data = new String(dataBytes);
+        }
+
+        readBuffer.offer(dataBytes);
+        plugin.notifyDataReceived(device.getAddress(), data);
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -158,7 +172,9 @@ public class BluetoothLeConnection extends Thread  {
                 }
             }
             if (!foundSpecificUuids) {
-                this.serviceUuid = null; this.readerUuid = null; this.writerUuid = null;
+                this.serviceUuid = null;
+                this.readerUuid = null;
+                this.writerUuid = null;
             }
         }
 
@@ -236,6 +252,32 @@ public class BluetoothLeConnection extends Thread  {
                 }
                 gatt.writeDescriptor(descriptor);
             }
+        }
+    }
+
+    public void notifyConnectionSuccess() {
+        this.connected = true;
+        connectionLatch.countDown();
+    }
+
+    public void notifyConnectionFailure(String error) {
+        this.connectionError = error;
+        this.connected = false;
+        connectionLatch.countDown();
+    }
+
+    public boolean waitForConnection(long timeoutMs) throws BluetoothPermissionException {
+        try {
+            if (!connectionLatch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+                throw new BluetoothPermissionException("Timeout BLE");
+            }
+            if (connectionError != null) {
+                throw new BluetoothPermissionException(connectionError);
+            }
+            return this.connected;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BluetoothPermissionException("Connection interrupt");
         }
     }
 
