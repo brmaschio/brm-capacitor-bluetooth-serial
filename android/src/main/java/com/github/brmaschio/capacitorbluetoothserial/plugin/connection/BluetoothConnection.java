@@ -12,7 +12,6 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 public class BluetoothConnection extends Thread {
 
@@ -38,41 +37,42 @@ public class BluetoothConnection extends Thread {
 
     public void run() {
         byte[] buffer = new byte[1024];
-        while (connected) {
-            try {
-                int bytesRead = reader.read(buffer);
-                if (bytesRead > 0) {
-                    byte[] data = Arrays.copyOf(buffer, bytesRead);
-                }
 
-                String data;
-                if (this.editorMode.equals(EditorMode.HEX)) {
-                    data = Helper.bytesToHex(buffer, bytesRead);
-                } else {
-                    data = new String(buffer, 0, bytesRead);
-                }
-
-                data = data.trim().isEmpty() ? null : data;
-                plugin.notifyDataReceived(device.getAddress(), data);
-
-            } catch (IOException e) {
+        while (true) {
+            if(this.connected) {
                 try {
-                    disconnect();
-                } catch (BluetoothPermissionException ex) {
-                    connected = false;
-                    throw new RuntimeException(ex);
-                }
-                break;
-            }
+                    int bytesRead = reader.read(buffer);
 
+                    String data;
+                    if(this.editorMode.equals(EditorMode.HEX)) {
+                        data = Helper.bytesToHex(buffer, bytesRead);
+                    } else {
+                        data = new String(buffer, 0, bytesRead);
+                    }
+
+                    if(!data.trim().isEmpty()) {
+                        appendToBuffer(data);
+                        plugin.notifyDataReceived(device.getAddress(), data);
+                    }
+
+                } catch (IOException e) {
+                    try {
+                        disconnect();
+                    } catch (BluetoothPermissionException ex) {
+                        connected = false;
+                        throw new RuntimeException(ex);
+                    }
+                    break;
+                }
+            }
         }
     }
 
-//    private void appendToBuffer(String data) {
-//        synchronized (this.readBuffer) {
-//            this.readBuffer.append(data);
-//        }
-//    }
+    private void appendToBuffer(String data) {
+        synchronized (this.readBuffer) {
+            this.readBuffer.append(data);
+        }
+    }
 
     public void disconnect() throws BluetoothPermissionException {
         try {
