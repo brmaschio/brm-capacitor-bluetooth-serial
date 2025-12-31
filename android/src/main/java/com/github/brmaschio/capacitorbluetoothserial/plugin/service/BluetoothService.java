@@ -9,19 +9,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerialPlugin;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.BluetoothConnection;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
-import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.BluetoothConnection;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
