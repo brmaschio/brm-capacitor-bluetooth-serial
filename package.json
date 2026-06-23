@@ -13,7 +13,7 @@
     "ios/Sources",
     "ios/Tests",
     "Package.swift",
-    "BrmCapacitorBluetoothSerial.podspec"
+    "BrmaschioBrmCapacitorBluetoothSerial.podspec"
   ],
   "author": "",
   "license": "MIT",
