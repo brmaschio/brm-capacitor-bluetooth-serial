@@ -12,7 +12,7 @@ sdk use java 21.0.2-open
 
 clear
 
-# npm install typescript@latest @types/node@latest --save-dev
+# npm install typescript@latest @types/node@25.0.3 --save-dev
 npm run verify:android
 npm run build
 

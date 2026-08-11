@@ -56,13 +56,8 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
 
         super.onCharacteristicRead(gatt, characteristic, status);
         if (status == BluetoothGatt.GATT_SUCCESS && characteristic.getUuid().equals(parentConnection.readerUuid)) {
-            parentConnection.readBuffer.offer(characteristic.getValue());
-//            byte[] value = characteristic.getValue();
-//            try {
-//                parentConnection.readBuffer.put(value);
-//            } catch (InterruptedException e) {
-//                Thread.currentThread().interrupt();
-//            }
+            // parentConnection.readBuffer.offer(characteristic.getValue());
+            parentConnection.onDataReceived(characteristic.getValue());
         }
     }
 
@@ -79,7 +74,6 @@ public class BrMBleGattCallback extends BluetoothGattCallback {
         super.onCharacteristicChanged(gatt, characteristic);
         if (characteristic.getUuid().equals(parentConnection.readerUuid)) {
             byte[] value = characteristic.getValue();
-//            parentConnection.readBuffer.offer(value);
             parentConnection.onDataReceived(value);
         }
     }

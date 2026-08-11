@@ -9,6 +9,8 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.service.BluetoothLeService;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.service.BluetoothService;
@@ -143,7 +145,10 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void connect(PluginCall call) {
         String address = call.getString("address");
         String mode = call.getString("mode", EditorMode.TEXT.getDesc());
+        String read = call.getString("readMode", ReadMode.RAW.getDesc());
+
         EditorMode editorMode = EditorMode.getByDesc(mode);
+        ReadMode readMode = ReadMode.getByDesc(read);
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
@@ -152,7 +157,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         JSObject ret = new JSObject();
         try {
-            boolean connected = btService.connect(address, editorMode);
+            boolean connected = btService.connect(address, editorMode, readMode);
             ret.put("connected", connected);
             call.resolve(ret);
         } catch (BluetoothPermissionException e) {
@@ -164,7 +169,10 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void connectBle(PluginCall call) {
         String address = call.getString("address");
         String mode = call.getString("mode", EditorMode.TEXT.getDesc());
+        String read = call.getString("readMode", ReadMode.RAW.getDesc());
+
         EditorMode editorMode = EditorMode.getByDesc(mode);
+        ReadMode readMode = ReadMode.getByDesc(read);
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
@@ -173,7 +181,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
 
         JSObject ret = new JSObject();
         try {
-            boolean connected = bleService.connectBle(address, null, null, null, editorMode);
+            boolean connected = bleService.connectBle(address, null, null, null, editorMode, readMode);
             ret.put("connected", connected);
             call.resolve(ret);
         } catch (BluetoothPermissionException e) {
@@ -221,6 +229,9 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void write(PluginCall call) {
         String address = call.getString("address");
         String command = call.getString("command");
+        String write = call.getString("writeMode", WriteMode.RAW.getDesc());
+
+        WriteMode writeMode = WriteMode.getByDesc(write);
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
@@ -232,7 +243,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
         }
 
         try {
-            btService.write(address, command);
+            btService.write(address, command, writeMode);
             call.resolve();
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);
@@ -243,6 +254,9 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
     public void writeBle(PluginCall call) {
         String address = call.getString("address");
         String command = call.getString("command");
+        String write = call.getString("writeMode", WriteMode.RAW.getDesc());
+
+        WriteMode writeMode = WriteMode.getByDesc(write);
 
         if (Helper.isEmpity(address)) {
             call.reject("address not found");
@@ -254,7 +268,7 @@ public class BrMCapacitorBluetoothSerialPlugin extends Plugin {
         }
 
         try {
-            bleService.writeBle(address, command);
+            bleService.writeBle(address, command, writeMode);
             call.resolve();
         } catch (BluetoothPermissionException e) {
             call.reject(e.getMessage(), e);

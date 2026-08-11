@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.RequiresPermission;
 
@@ -17,6 +16,8 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermis
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BrMBleGattCallback;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,12 +44,13 @@ public class BluetoothLeConnection extends Thread {
     public final BlockingQueue<byte[]> readBuffer;
     public final EditorMode editorMode;
     public boolean connected = false;
+    private final PacketParser parser;
 
     private final BrMCapacitorBluetoothSerialPlugin plugin;
 
     @SuppressLint("MissingPermission")
     public BluetoothLeConnection(Context context, BluetoothDevice device, EditorMode editorMode,
-                                 UUID serviceUuid, UUID readerUuid, UUID writerUuid,
+                                 ReadMode readMode, UUID serviceUuid, UUID readerUuid, UUID writerUuid,
                                  BrMCapacitorBluetoothSerialPlugin plugin) throws BluetoothPermissionException {
         this.plugin = plugin;
         this.serviceUuid = serviceUuid;
@@ -57,7 +59,8 @@ public class BluetoothLeConnection extends Thread {
         this.context = context;
         this.editorMode = editorMode;
         this.device = device;
-        readBuffer = new ArrayBlockingQueue<>(100);
+        this.readBuffer = new ArrayBlockingQueue<>(100);
+        this.parser = new PacketParser(readMode);
         connect();
     }
 
@@ -79,25 +82,27 @@ public class BluetoothLeConnection extends Thread {
     }
 
     @SuppressLint("MissingPermission")
-    public void write(byte[] bytes) throws BluetoothPermissionException {
+    public void write(byte[] bytes, WriteMode writeMode) throws BluetoothPermissionException {
         if (!this.connected || this.socket == null || this.writer == null) {
             throw new BluetoothPermissionException("BLE device not connected or write capability unavailable.");
         }
-
-        this.writer.setValue(bytes);
+        byte[] command = parser.applyWriteMode(bytes, writeMode);
+        this.writer.setValue(command);
         boolean success = this.socket.writeCharacteristic(this.writer);
         if (!success) {
             throw new BluetoothPermissionException("Failed to write to BLE feature.");
         }
-
     }
 
-    public String read() throws BluetoothPermissionException {
+    public String read() {
 
         if (!running) return null;
 
         byte[] dataBytes = this.readBuffer.poll();
-        if (dataBytes == null) return null;
+
+        if (dataBytes == null || dataBytes.length == 0) {
+            return null;
+        }
 
         String data;
         if (this.editorMode.equals(EditorMode.HEX)) {
@@ -111,17 +116,23 @@ public class BluetoothLeConnection extends Thread {
     }
 
     public void onDataReceived(byte[] dataBytes) {
-        if (dataBytes == null || dataBytes.length == 0) return;
-
-        String data;
-        if (this.editorMode.equals(EditorMode.HEX)) {
-            data = Helper.bytesToHex(dataBytes, dataBytes.length);
-        } else {
-            data = new String(dataBytes);
+        if (dataBytes == null || dataBytes.length == 0) {
+            return;
         }
 
-        readBuffer.offer(dataBytes);
-        plugin.notifyDataReceived(device.getAddress(), data);
+        List<byte[]> packets = parser.process(dataBytes);
+        for (byte[] packet : packets) {
+            readBuffer.offer(packet);
+
+            String data;
+            if (this.editorMode.equals(EditorMode.HEX)) {
+                data = Helper.bytesToHex(packet, packet.length);
+            } else {
+                data = new String(packet);
+            }
+
+            plugin.notifyDataReceived(device.getAddress(), data);
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
