@@ -8,7 +8,7 @@ Supported platforms
 
 - [ ] Web
 - [x] Android
-- [ ] iOS
+- [ ] IOS
 
 ## Install
 
@@ -196,19 +196,21 @@ BrMCapacitorBluetoothSerial.scanBleDevices()
 Connect to a specific device, and inform whether the communication will work as text or hexadecimal.
 
 ```typescript
-connect(options: { address: string; mode: EditorMode; }) => Promise<{ connected: boolean; }>
+connect(options: { address: string; mode: EditorMode; readMode: ReadMode;  }) => Promise<{ connected: boolean; }>
 ```
 
-| Param         | Type                                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| **`options`** | <code>{ address: string; mode: <a href="#editormode">EditorMode</a>; }</code> |
+| Param         | Type                                                          | Default |
+| ------------- | ------------------------------------------------------------- | ------- |
+| **`options`** | <code>{ address: string }</code>                              |         |
+| **`options`** | <code>{ mode: <a href="#editormode">EditorMode</a> }</code>   | TEXT    |
+| **`options`** | <code>{ readMode: <a href="#readMode">ReadMode</a> }</code>   | RAW     |
 
 **Returns:** <code>Promise&lt;{ connected: boolean; }&gt;</code>
 
 ```typescript
 import { BrMCapacitorBluetoothSerial, EditorMode } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.connect({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT })
+BrMCapacitorBluetoothSerial.connect({ address: '00:11:22:33:44:55' })
   .then((response) => {
     console.log('connected', response.connected);
   })
@@ -224,19 +226,21 @@ BrMCapacitorBluetoothSerial.connect({ address: '00:11:22:33:44:55', mode: Editor
 Connect to a specific device BLE, and inform whether the communication will work as text or hexadecimal.
 
 ```typescript
-connectBle(options: { address: string; mode: EditorMode; }) => Promise<{ connected: boolean; }>
+connectBle(options: { address: string; mode: EditorMode; readMode: ReadMode; }) => Promise<{ connected: boolean; }>
 ```
 
-| Param         | Type                                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| **`options`** | <code>{ address: string; mode: <a href="#editormode">EditorMode</a>; }</code> |
+| Param         | Type                                                          | Default |
+| ------------- | ------------------------------------------------------------- | ------- |
+| **`options`** | <code>{ address: string }</code>                              |         |
+| **`options`** | <code>{ mode: <a href="#editormode">EditorMode</a> }</code>   | TEXT    |
+| **`options`** | <code>{ readMode: <a href="#readMode">ReadMode</a> }</code>   | RAW     |
 
 **Returns:** <code>Promise&lt;{ connected: boolean; }&gt;</code>
 
 ```typescript
 import { BrMCapacitorBluetoothSerial, EditorMode } from '@brmaschio/brm-capacitor-bluetooth-serial';
 
-BrMCapacitorBluetoothSerial.connectBle({ address: '00:11:22:33:44:55', mode: EditorMode.TEXT })
+BrMCapacitorBluetoothSerial.connectBle({ address: '00:11:22:33:44:55' })
   .then((response) => {
     console.log('connected', response.connected);
   })
@@ -367,9 +371,11 @@ Send a command to the connected device.
 write(options: { address: string; command: string; }) => Promise<void>
 ```
 
-| Param         | Type                                               |
-| ------------- | -------------------------------------------------- |
-| **`options`** | <code>{ address: string; command: string; }</code> |
+| Param         | Type                                                           | Default |
+| ------------- | -------------------------------------------------------------- | ------- |
+| **`options`** | <code>{ address: string }</code>                               |         |
+| **`options`** | <code>{ command: string; }</code>                              |         |
+| **`options`** | <code>{ writeMode: <a href="#WriteMode">WriteMode</a> }</code> | RAW     |
 
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
@@ -393,9 +399,11 @@ Send a command to the connected device BLE.
 writeBle(options: { address: string; command: string; }) => Promise<void>
 ```
 
-| Param         | Type                                               |
-| ------------- | -------------------------------------------------- |
-| **`options`** | <code>{ address: string; command: string; }</code> |
+| Param         | Type                                                           | Default |
+| ------------- | -------------------------------------------------------------- | ------- |
+| **`options`** | <code>{ address: string }</code>                               |         |
+| **`options`** | <code>{ command: string; }</code>                              |         |
+| **`options`** | <code>{ writeMode: <a href="#WriteMode">WriteMode</a> }</code> | RAW     |
 
 ```typescript
 import { BrMCapacitorBluetoothSerial } from '@brmaschio/brm-capacitor-bluetooth-serial';
@@ -510,3 +518,22 @@ function stopListeningForData() {
 | ---------- | ------------------- |
 | **`TEXT`** | <code>"TEXT"</code> |
 | **`HEX`**  | <code>"HEX"</code>  |
+
+#### ReadMode
+
+| Members       | Value                  |
+| ------------- | ---------------------- |
+| **`RAW`**     | <code>"RAW"</code>     |
+| **`CR`**      | <code>"CR"</code>      |
+| **`LF`**      | <code>"LF"</code>      |
+| **`CRLF`**    | <code>"CRLF"</code>    |
+| **`STX_ETX`** | <code>"STX_ETX"</code> |
+
+#### WriteMode
+
+| Members       | Value                  |
+| ------------- | ---------------------- |
+| **`RAW`**     | <code>"RAW"</code>     |
+| **`CR`**      | <code>"CR"</code>      |
+| **`LF`**      | <code>"LF"</code>      |
+| **`CRLF`**    | <code>"CRLF"</code>    |

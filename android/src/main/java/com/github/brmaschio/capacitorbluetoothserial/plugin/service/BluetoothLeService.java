@@ -16,6 +16,8 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermis
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BrMBleScanCallback;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -72,8 +74,12 @@ public class BluetoothLeService {
     }
 
     @SuppressLint("MissingPermission")
-    public boolean connectBle(String address, String serviceUuidStr, String readCharacteristicUuidStr,
-                              String writeCharacteristicUuidStr, EditorMode editorMode) throws BluetoothPermissionException {
+    public boolean connectBle(String address,
+                              String serviceUuidStr,
+                              String readCharacteristicUuidStr,
+                              String writeCharacteristicUuidStr,
+                              EditorMode editorMode,
+                              ReadMode readMode) throws BluetoothPermissionException {
 
         checksBleScannerPermission();
 
@@ -93,7 +99,7 @@ public class BluetoothLeService {
 
         try {
             BluetoothLeConnection bleConnection = new BluetoothLeConnection(context, device, editorMode,
-                    serviceUuid, readCharacteristicUuid, writeCharacteristicUuid, this.plugin);
+                    readMode, serviceUuid, readCharacteristicUuid, writeCharacteristicUuid, this.plugin);
             connectionsBleInstances.put(address, bleConnection);
             bleConnection.start();
 
@@ -135,7 +141,7 @@ public class BluetoothLeService {
         return connection != null && connection.isConnected();
     }
 
-    public void writeBle(String address, String command) throws BluetoothPermissionException {
+    public void writeBle(String address, String command, WriteMode writeMode) throws BluetoothPermissionException {
         BluetoothLeConnection connection = connectionsBleInstances.get(address);
         if (connection == null || !connection.isConnected()) {
             throw new BluetoothPermissionException("Dispositivo BLE não conectado.");
@@ -147,7 +153,7 @@ public class BluetoothLeService {
         } else {
             bytes = command.getBytes(); // UTF-8 default
         }
-        connection.write(bytes);
+        connection.write(bytes, writeMode);
     }
 
     public String readBle(String address) throws BluetoothPermissionException {

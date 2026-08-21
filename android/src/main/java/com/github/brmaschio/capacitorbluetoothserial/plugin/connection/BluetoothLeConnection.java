@@ -17,6 +17,8 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermis
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BrMBleGattCallback;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,12 +45,13 @@ public class BluetoothLeConnection extends Thread {
     public final BlockingQueue<byte[]> readBuffer;
     public final EditorMode editorMode;
     public boolean connected = false;
+    private final PacketParser parser;
 
     private final BrMCapacitorBluetoothSerialPlugin plugin;
 
     @SuppressLint("MissingPermission")
     public BluetoothLeConnection(Context context, BluetoothDevice device, EditorMode editorMode,
-                                 UUID serviceUuid, UUID readerUuid, UUID writerUuid,
+                                 ReadMode readMode, UUID serviceUuid, UUID readerUuid, UUID writerUuid,
                                  BrMCapacitorBluetoothSerialPlugin plugin) throws BluetoothPermissionException {
         this.plugin = plugin;
         this.serviceUuid = serviceUuid;
@@ -58,6 +61,7 @@ public class BluetoothLeConnection extends Thread {
         this.editorMode = editorMode;
         this.device = device;
         readBuffer = new ArrayBlockingQueue<>(100);
+        this.parser = new PacketParser(readMode);
         connect();
     }
 
@@ -79,12 +83,13 @@ public class BluetoothLeConnection extends Thread {
     }
 
     @SuppressLint("MissingPermission")
-    public void write(byte[] bytes) throws BluetoothPermissionException {
+    public void write(byte[] bytes, WriteMode writeMode) throws BluetoothPermissionException {
         if (!this.connected || this.socket == null || this.writer == null) {
             throw new BluetoothPermissionException("BLE device not connected or write capability unavailable.");
         }
 
-        this.writer.setValue(bytes);
+        byte[] command = parser.applyWriteMode(bytes, writeMode);
+        this.writer.setValue(command);
         boolean success = this.socket.writeCharacteristic(this.writer);
         if (!success) {
             throw new BluetoothPermissionException("Failed to write to BLE feature.");

@@ -8,6 +8,8 @@ import com.github.brmaschio.capacitorbluetoothserial.BrMCapacitorBluetoothSerial
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,13 +26,15 @@ public class BluetoothConnection extends Thread {
     private final StringBuffer readBuffer;
     private boolean connected = false;
     private final EditorMode editorMode;
+    private final PacketParser parser;
 
     @SuppressLint("MissingPermission")
-    public BluetoothConnection(BluetoothDevice device, EditorMode editorMode,
+    public BluetoothConnection(BluetoothDevice device, EditorMode editorMode, ReadMode readMode,
                                BrMCapacitorBluetoothSerialPlugin plugin) throws BluetoothPermissionException {
         this.plugin = plugin;
         this.device = device;
         this.editorMode = editorMode;
+        this.parser = new PacketParser(readMode);
         connect();
         readBuffer = new StringBuffer();
     }
@@ -87,9 +91,11 @@ public class BluetoothConnection extends Thread {
         return socket.isConnected();
     }
 
-    public void write(byte[] bytes) throws BluetoothPermissionException {
+    public void write(byte[] bytes, WriteMode writeMode) throws BluetoothPermissionException {
         try {
-            writer.write(bytes);
+            byte[] command = parser.applyWriteMode(bytes, writeMode);
+            writer.write(command);
+            writer.flush();
         } catch (IOException e) {
             throw new BluetoothPermissionException("Erro To write");
         }

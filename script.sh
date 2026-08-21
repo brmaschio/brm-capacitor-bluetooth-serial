@@ -9,10 +9,11 @@ export NVM_DIR="$HOME/.nvm"
 
 nvm use v22.10.0
 sdk use java 21.0.2-open
+sdk use gradle 8.11
 
 clear
 
-# npm install typescript@latest @types/node@latest --save-dev
+# npm install typescript@latest @types/node@25.0.3 --save-dev
 npm run verify:android
 npm run build
 

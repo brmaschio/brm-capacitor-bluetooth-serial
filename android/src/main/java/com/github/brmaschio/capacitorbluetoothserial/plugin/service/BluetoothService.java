@@ -19,6 +19,8 @@ import com.github.brmaschio.capacitorbluetoothserial.plugin.connection.Bluetooth
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.BluetoothPermissionException;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.EditorMode;
 import com.github.brmaschio.capacitorbluetoothserial.plugin.core.Helper;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.ReadMode;
+import com.github.brmaschio.capacitorbluetoothserial.plugin.core.WriteMode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -102,7 +104,7 @@ public class BluetoothService {
         return false;
     }
 
-    public boolean connect(String address, EditorMode editorMode) throws BluetoothPermissionException {
+    public boolean connect(String address, EditorMode editorMode, ReadMode readMode) throws BluetoothPermissionException {
 
         if(!hasPermitions()) {
             throw new BluetoothPermissionException("Without Permission");
@@ -118,7 +120,7 @@ public class BluetoothService {
             throw new BluetoothPermissionException("Device not found");
         }
 
-        connection = new BluetoothConnection(device, editorMode, this.plugin);
+        connection = new BluetoothConnection(device, editorMode, readMode, this.plugin);
         connection.start();
         connections.put(device.getAddress(), connection);
         return true;
@@ -136,7 +138,7 @@ public class BluetoothService {
         return true;
     }
 
-    public void write(String address, String command) throws BluetoothPermissionException {
+    public void write(String address, String command, WriteMode writeMode) throws BluetoothPermissionException {
 
         BluetoothConnection connection;
         synchronized (this) {
@@ -149,10 +151,10 @@ public class BluetoothService {
 
         if (connection.getEditorMode().equals(EditorMode.HEX)) {
             byte[] bytes = Helper.hexStringToByteArray(command);
-            connection.write(bytes);
+            connection.write(bytes, writeMode);
         } else {
             byte[] bytes = Helper.toByteArray(command);
-            connection.write(bytes);
+            connection.write(bytes, writeMode);
         }
 
     }
